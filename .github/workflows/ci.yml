@@ -1,0 +1,39 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: 单元测试（确定性，零网络）
+        run: node --test
+      - name: CLI 冒烟（fixture 用户，不访问外网）
+        run: |
+          node -e "
+            const { pulse } = require('./lib/pulse');
+            const client = {
+              listRepos: async () => [{
+                name: 'demo', html_url: 'https://github.com/x/demo',
+                description: 'd', pushed_at: new Date().toISOString(),
+                homepage: 'https://x.dev', license: { spdx_id: 'MIT' }, topics: ['a','b','c'],
+              }],
+              latestRun: async () => ({ conclusion: 'success' }),
+            };
+            pulse('fixture', { client }).then((r) => {
+              if (r.repos[0].score !== 100) throw new Error('fixture 评分异常: ' + r.repos[0].score);
+              console.log('CLI 冒烟通过: demo =', r.repos[0].score);
+            });
+          "

@@ -1,0 +1,27 @@
+{
+  "name": "repo-pulse",
+  "version": "1.0.0",
+  "description": "仓库脉搏:一行命令体检全部公开仓库——CI 状态/活跃度/元数据,可解释健康评分,零 npm 依赖",
+  "main": "lib/pulse.js",
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node server/pulse-server.js",
+    "pulse": "node cli.js"
+  },
+  "keywords": [
+    "github",
+    "ci",
+    "health-score",
+    "dashboard",
+    "zero-dependency"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  }
+}
