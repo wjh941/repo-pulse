@@ -35,7 +35,9 @@
   .meta { color: var(--text2); font-size: 13px; margin-top: 4px; }
   ul.findings { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--text2); }
   ul.findings b { color: var(--text); font-weight: 600; }
-  .grade-A { color: var(--green); } .grade-B { color: var(--orange); } .grade-C, .grade-D { color: var(--red); }
+  .grade-S { color: #bf5af2; } .grade-A { color: var(--green); } .grade-B { color: var(--orange); } .grade-C, .grade-D { color: var(--red); }
+  .snapshot { background: rgba(191,90,242,.08); color: #8e44ad; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; }
+  @media (prefers-color-scheme: dark) { .snapshot { color: #bf5af2; } }
   .empty { text-align: center; color: var(--text2); padding: 70px 0; }
   .err { background: rgba(255,59,48,.08); color: var(--red); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px; }
   .loading { text-align: center; color: var(--text2); padding: 40px 0; }
@@ -60,19 +62,38 @@ async function run() {
   if (!user) return;
   out.innerHTML = '<div class="loading">体检中，约需 2~5 秒（逐仓查询 CI 状态）…</div>';
   try {
-    const res = await fetch(`/api/pulse/${encodeURIComponent(user)}`);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    render(data);
+    const { data, mode } = await loadReport(user);
+    render(data, mode);
   } catch (e) {
     out.innerHTML = `<div class="err">⚠️ ${esc(e.message)}</div>`;
   }
 }
 
-function render(r) {
+/** 双模式取数:本地服务走 /api(实时);静态托管(GitHub Pages)无后端,回退到 CI 预生成的 data.json 快照 */
+async function loadReport(user) {
+  try {
+    const res = await fetch(`/api/pulse/${encodeURIComponent(user)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return { data, mode: 'live' };
+  } catch (liveErr) {
+    const res = await fetch('./data.json');
+    if (!res.ok) throw liveErr;
+    const snap = await res.json();
+    if (String(snap.user).toLowerCase() !== user.toLowerCase()) {
+      throw new Error(`静态快照只收录 ${snap.user}——查询其他用户请 clone 本地跑 node cli.js`);
+    }
+    return { data: snap, mode: 'snapshot' };
+  }
+}
+
+function render(r, mode) {
   const s = r.summary;
-  const stars = [['平均分', s.avgScore, ''], ['A 级', s.gradeA, `/${s.total}`], ['CI 红灯', s.redCi, ''], ['无 CI', s.noCi, ''], ['超 3 月未更', s.stale, '']];
-  let html = '<div class="stats">' + stars.map(([l, n, suf]) =>
+  const banner = mode === 'snapshot'
+    ? `<div class="snapshot">📰 静态快照 · 生成于 ${esc((r.generatedAt || '').slice(0, 16).replace('T', ' '))} UTC · CI 每 6 小时刷新 · 想查任意用户/实时体检,clone 本地 <b>node cli.js &lt;user&gt;</b></div>`
+    : '';
+  const stars = [['平均分', s.avgScore, ''], ['S 级', s.gradeS ?? 0, `/${s.total}`], ['A 级', s.gradeA, `/${s.total}`], ['CI 红灯', s.redCi, ''], ['无 CI', s.noCi, ''], ['超 3 月未更', s.stale, '']];
+  let html = banner + '<div class="stats">' + stars.map(([l, n, suf]) =>
     `<div class="stat"><div class="n">${n}${suf}</div><div class="l">${l}</div></div>`).join('') + '</div>';
   html += r.repos.map((repo) => {
     const ci = repo.ciConclusion === 'success' ? '<span class="chip">CI ✅</span>'

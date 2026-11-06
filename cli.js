@@ -29,7 +29,8 @@ async function main() {
     await checkAllLinks(user, report, client);
   } else {
     const { summary, repos } = report;
-    console.log(`\n📊 ${user} · ${summary.total} 仓 · 平均健康分 ${summary.avgScore} · A 级 ${summary.gradeA} 个\n`);
+    const gradeLine = summary.gradeS ? `S 级 ${summary.gradeS} 个 · A 级 ${summary.gradeA} 个` : `A 级 ${summary.gradeA} 个`;
+    console.log(`\n📊 ${user} · ${summary.total} 仓 · 平均健康分 ${summary.avgScore} · ${gradeLine}\n`);
     for (const r of repos) {
       const ci = r.ciConclusion === 'success' ? 'CI✅' : r.ciConclusion ? `CI❌(${r.ciConclusion})` : 'CI—';
       console.log(`  ${r.score.toString().padStart(3)} [${r.grade}] ${r.name.padEnd(22)} ${ci.padEnd(16)} ${r.pushedAt.slice(0, 10) || '—'}`);

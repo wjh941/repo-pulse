@@ -24,10 +24,10 @@ function perfectRepo(overrides = {}) {
   };
 }
 
-test('健康评分：全优仓库 = 100 分 A 级，findings 全为正向', () => {
+test('健康评分：全优仓库 = 100 分 S 级，findings 全为正向', () => {
   const h = healthScore(perfectRepo(), { conclusion: 'success' }, NOW);
   assert.strictEqual(h.score, 100);
-  assert.strictEqual(h.grade, 'A');
+  assert.strictEqual(h.grade, 'S');
   for (const f of h.findings) assert.ok(f.point > 0, `不应有 0 分项: ${f.text}`);
 });
 
@@ -106,6 +106,6 @@ test('Markdown 报告：含表格、修复清单、管道符转义安全', () =>
     summary: { total: 1, avgScore: 100, gradeA: 1, redCi: 0, noCi: 0, stale: 0 },
   });
   assert.ok(md.includes('| [demo]'));
-  assert.ok(md.includes('🟢 100'));
+  assert.ok(md.includes('💎 100')); // 满分现在是 S 级
   assert.ok(!md.includes('修复清单') || md.includes('修复清单（按仓库）'));
 });
