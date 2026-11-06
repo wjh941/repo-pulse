@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node server/pulse-server.js",
-    "pulse": "node cli.js"
+    "pulse": "node cli.js",
+    "test": "node --test"
   },
   "keywords": [
     "github",

@@ -48,13 +48,16 @@ Web 仪表盘：`npm start` 后打开 `http://localhost:4335`，输入用户名�
 git clone https://github.com/wjh941/repo-pulse.git
 cd repo-pulse
 
-node cli.js wjh941        # 终端表格
-node cli.js wjh941 --md   # Markdown 周报（可直接贴 issue）
-node cli.js wjh941 --json # JSON 快照（可归档对比）
+node cli.js wjh941            # 终端表格
+node cli.js wjh941 --md       # Markdown 周报（可直接贴 issue）
+node cli.js wjh941 --json     # JSON 快照（可归档对比）
+node cli.js wjh941 --links    # README 外链存活检查（404 判死，退出码 1 可进 CI）
 
-npm start                 # Web 仪表盘 http://localhost:4335
-npm test                  # 8 个单元测试
+npm start                     # Web 仪表盘 http://localhost:4335
+npm test                      # 单元测试
 ```
+
+外链检查的判定口径——**降级不撒谎，也不误杀**：404/410 判死；401/403/429/503 和网络异常按「疑似反爬」警告（爱发电这类 Cloudflare 站点会挡机器人，不能因此让 CI 变红）。
 
 **可选**：`export GITHUB_TOKEN=ghp_xxx` 把 GitHub API 限额从匿名 60 次/时 提升到 5000 次/时。Token 只读环境变量，不落盘、不进代码。
 
@@ -88,7 +91,7 @@ repo-pulse/
 - [x] CLI + Web 仪表盘 + Markdown 周报（2026-10）
 - [ ] 快照对比：`--json` 归档后 diff，输出"本周新增红灯/停止维护"告警
 - [ ] README 质量检查（长度、场景引言、截图存在性）
-- [ ] README 外链存活检查（2026-11-06 巡检靠人肉点出了两个指向已下架仓库的 404）
+- [x] README 外链存活检查：`--links`（2026-11-06 巡检靠人肉点出两个指向已下架仓库的 404，次日实现）
 - [ ] 接入 miniflow「我的画像」：体检报告自动同步到个人博客
 
 ## 📄 License
